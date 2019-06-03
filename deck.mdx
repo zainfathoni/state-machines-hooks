@@ -1,5 +1,158 @@
+export { yellow as theme } from 'mdx-deck/themes'
+import { Appear, Image, Notes, Step } from 'mdx-deck'
+
 # State Machines Meet React Hooks
 
 ---
 
-Zain Fathoni
+# Zain Fathoni
+
+<ul>
+  <Appear>
+    <li>Indonesian family with 2 kids</li>
+    <li>Working & Living @ Singapore</li>
+    <li>Backend turned Frontend</li>
+    <li>♥️ React & its Hooks</li>
+  </Appear>
+</ul>
+
+---
+
+# Problem Statement
+
+<ul>
+  <Appear>
+    <li>Complex UI flows require multiple states</li>
+    <li>Multiple states are generally too implicit</li>
+    <li>Implicit codes are harder to reason about</li>
+    <li>Hidden bugs everywhere due to "invisible states"</li>
+  </Appear>
+</ul>
+
+---
+
+# What is State Machines?
+
+<ul>
+  <Appear>
+    <li>
+      <a href="https://en.wikipedia.org/wiki/Finite-state_machine">Finite State Machines</a>
+    </li>
+    <li>
+      <a href="https://xstate.js.org/docs/#why" target="_blank">
+        Why?
+      </a>
+      <ul>
+        <li>Predictable</li>
+        <li>
+          <a href="http://slides.com/davidkhourshid/finite-state-machines#/22" target="_blank">
+            Provide a common language for designers & developers.
+          </a>
+        </li>
+      </ul>
+    </li>
+  </Appear>
+</ul>
+
+---
+
+<Image src="images/designers-flow-diagram.png" />
+
+---
+
+# Hypothesis
+
+<ul>
+  <Appear>
+    <li>State machines make all states are visible</li>
+    <li>No invisible states means no hidden bugs</li>
+  </Appear>
+</ul>
+
+---
+
+# Problem Domain:
+
+## Ninja Van Parcel Pickup Reservations
+
+<ul>
+  <Appear>
+    <li>Calendar View with all Reservations listed in corresponding dates</li>
+    <li>Modal View with multiple states</li>
+    <li>List View</li>
+    <li>
+      Detail View
+      <ul>
+        <li>View, Edit, & Create (for Upcoming Pickups)</li>
+        <li>View only (for Past Pickups)</li>
+      </ul>
+    </li>
+  </Appear>
+</ul>
+
+---
+
+# Let's jump to the code!
+
+<ol>
+  <Appear>
+    <li>Initial state: Conditional rendering using multiple local state</li>
+    <li>Problem: Complex requirements breed complex conditionals in the code</li>
+    <li>Solution: State machines alternative representation</li>
+  </Appear>
+</ol>
+
+---
+
+## Determining which View to display
+
+- List of Pickups (if pickups > 1)
+- Detail of Pickup (if pickups === 1)
+- Create New Pickup (if pickups === 0)
+
+---
+
+# Cases
+
+- Determining List View vs Detail View vs Detail New ~ CLICK_DATE action guards
+- Block creating/editing past pickups ~ CLICK_DATE action guards
+- Content Flashing when closing the modal ~ CLOSE action
+- Editing overlapping timeslots ~ EDIT & SAVE actions
+- ~Viewing Reservations in a Date Range
+- ~Editing Reservations in a Date Range
+
+---
+
+<Notes>
+State Machines to the Rescue!
+State
+Actions
+Guards
+New Implementations
+CLICK_DATE action
+SHOW_DETAILS action
+EDIT action
+SAVE action
+~VERIFY action
+useMemo for conditional props instead of conditional rendering multiple components to avoid modal popup flashing
+Isolate the state machine into Custom Hooks
+Now all states are visible!
+Easier to test
+All state transitions are well-tested
+Is it bug free? Not really
+Remaining bugs due to discrepancies between the state & the rendered views ~ show 1-2 instances of misrendering
+We should have tested the rendered views from every particular states as well
+Consider Integration Tests
+Lessons Learned
+State Machines must be designed thoroughly
+Yes, it's easier to test the states, but don't forget to test the rendered views!
+There's no silver bullet: Just as other solutions out there, "You might not need Redux, getDerivedStateFromProps, State Machines, etc."
+Key Takeaways
+Use State Machines sparingly
+Isolate State management into Custom Hooks
+Always test your code thoroughly
+Further Reading
+xstate
+Testing Trophy by Kent C. Dodds
+
+</Notes>
