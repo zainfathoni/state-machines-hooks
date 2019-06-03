@@ -1,6 +1,8 @@
 import { Appear, Image, Notes, Step } from 'mdx-deck'
 import { default as theme } from 'mdx-deck/themes'
 import customTheme from './theme'
+import { ReservationCalendar1 } from './components'
+import 'antd/dist/antd.css'
 
 export const themes = [theme, customTheme]
 
@@ -47,7 +49,9 @@ export const themes = [theme, customTheme]
 <ul>
   <Appear>
     <li>
-      <a href="https://en.wikipedia.org/wiki/Finite-state_machine">Finite State Machines</a>
+      <a href="https://en.wikipedia.org/wiki/Finite-state_machine">
+        Finite State Machines
+      </a>
     </li>
     <li>
       <a href="https://xstate.js.org/docs/#why" target="_blank">
@@ -56,7 +60,10 @@ export const themes = [theme, customTheme]
       <ul>
         <li>Predictable</li>
         <li>
-          <a href="http://slides.com/davidkhourshid/finite-state-machines#/22" target="_blank">
+          <a
+            href="http://slides.com/davidkhourshid/finite-state-machines#/22"
+            target="_blank"
+          >
             Provide a common language for designers & developers.
           </a>
         </li>
@@ -108,7 +115,9 @@ export const themes = [theme, customTheme]
 <ol>
   <Appear>
     <li>Initial state: Conditional rendering using multiple local state</li>
-    <li>Problem: Complex requirements breed complex conditionals in the code</li>
+    <li>
+      Problem: Complex requirements breed complex conditionals in the code
+    </li>
     <li>Solution: State machines alternative representation</li>
   </Appear>
 </ol>
@@ -120,6 +129,10 @@ export const themes = [theme, customTheme]
 - List of Pickups (if pickups > 1)
 - Detail of Pickup (if pickups === 1)
 - Create New Pickup (if pickups === 0)
+
+---
+
+<ReservationCalendar1 />
 
 ---
 
