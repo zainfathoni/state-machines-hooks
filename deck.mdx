@@ -1,10 +1,10 @@
 import { Appear, Image, Notes, Step } from 'mdx-deck'
-import { default as theme } from '@mdx-deck/themes'
+import { syntaxHighlighterPrism } from '@mdx-deck/themes'
 import customTheme from './theme'
 import { ReservationCalendar } from './app/ReservationCalendar'
 import 'antd/dist/antd.css'
 
-export const themes = [theme, customTheme]
+export const themes = [syntaxHighlighterPrism, customTheme]
 
 # State Machines Meet React Hooks
 
@@ -135,6 +135,47 @@ export const themes = [theme, customTheme]
 ## Calendar
 
 <ReservationCalendar />
+
+---
+
+## ReservationCalendar
+
+```jsx
+export const ReservationCalendar = () => {
+  const [momentDate, setMomentDate] = useState(null)
+  const clearDate = () => setMomentDate(null)
+  const { createData, deleteData, getData, updateData } = useDateMap(clearDate)
+  const date = momentDate && momentDate.date()
+  const formattedDate = momentDate && momentDate.format('DD MMM YYYY')
+
+  return (
+    <main className="container">
+      <Calendar
+        dateCellRender={mDate => mDate && dataCellRender(getData(mDate.date()))}
+        onSelect={mDate => setMomentDate(mDate)}
+      />
+      <ReservationModal
+        data={getData(date)}
+        date={date}
+        formattedDate={formattedDate}
+        onCancel={clearDate}
+        onCreate={createData}
+        onDelete={deleteData}
+        onUpdate={updateData}
+        visible={!!date}
+      />
+    </main>
+  )
+}
+```
+
+---
+
+## ReservationModal
+
+```Notes
+Add some code
+```
 
 ---
 
