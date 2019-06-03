@@ -1,5 +1,8 @@
-export { yellow as theme } from 'mdx-deck/themes'
 import { Appear, Image, Notes, Step } from 'mdx-deck'
+import { default as theme } from 'mdx-deck/themes'
+import customTheme from './theme'
+
+export const themes = [theme, customTheme]
 
 # State Machines Meet React Hooks
 
