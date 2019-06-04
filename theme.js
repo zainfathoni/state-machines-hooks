@@ -1,5 +1,5 @@
 export default {
   pre: {
-    fontSize: '.4em'
+    fontSize: '.2em'
   }
 }

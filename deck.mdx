@@ -180,53 +180,155 @@ export const ReservationCalendar = () => {
 
 ## ReservationModal
 
-```Notes
-Add some code
+```jsx
+export const ReservationModal = ({
+  data,
+  date,
+  formattedDate,
+  onCreate,
+  onDelete,
+  onUpdate,
+  ...props
+}) => {
+  const [index, setIndex] = useState(-1)
+  const [editing, setEditing] = useState(false)
+
+  // Render details directly if data.length === 1
+  useEffect(() => {
+    if (data.length === 1) {
+      setIndex(0)
+    }
+  }, [data.length, index, editing])
+
+  // FIXME: Avoid content flashing while closing the Modal
+  const visible = !!date
+  const isDetailView = visible && index >= 0
+  const isEmpty = visible && data.length === 0
+  const handleDelete = () => onDelete(date, index)
+  const handleCreate = data => onCreate(date, data)
+  const handleUpdate = data => onUpdate(date, index, data)
+  const handleEdit = () => setEditing(true)
+  const handleBack = () => {
+    setEditing(false)
+    setIndex(-1)
+  }
+
+  return (
+    <Modal
+      afterClose={() => {
+        setEditing(false)
+        setIndex(-1)
+      }}
+      centered
+      footer={
+        isDetailView && !editing && data[index].status === 'warning'
+          ? [
+              <DeleteButton key="delete" onClick={handleDelete} />,
+              <EditButton key="edit" onClick={handleEdit} />
+            ]
+          : null
+      }
+      title={
+        <>
+          {isDetailView && <LeftIcon onClick={handleBack} />}
+          {formattedDate}
+        </>
+      }
+      visible={visible}
+      {...props}
+    >
+      {isDetailView && !editing ? (
+        <ReservationDetailView item={data[index]} />
+      ) : isDetailView && editing ? (
+        <ReservationDetailEdit item={data[index]} onSubmit={handleUpdate} />
+      ) : isEmpty ? (
+        <ReservationDetailEdit onSubmit={handleCreate} />
+      ) : (
+        <ReservationList data={data} onActionClick={index => setIndex(index)} />
+      )}
+    </Modal>
+  )
+}
 ```
 
 ---
 
-# Cases
-
-- Determining List View vs Detail View vs Detail New ~ CLICK_DATE action guards
-- Block creating/editing past pickups ~ CLICK_DATE action guards
-- Content Flashing when closing the modal ~ CLOSE action
-- Editing overlapping timeslots ~ EDIT & SAVE actions
-- ~Viewing Reservations in a Date Range
-- ~Editing Reservations in a Date Range
+# Demo
 
 ---
 
-<Notes>
-State Machines to the Rescue!
-State
-Actions
-Guards
-New Implementations
-CLICK_DATE action
-SHOW_DETAILS action
-EDIT action
-SAVE action
-~VERIFY action
-useMemo for conditional props instead of conditional rendering multiple components to avoid modal popup flashing
-Isolate the state machine into Custom Hooks
-Now all states are visible!
-Easier to test
-All state transitions are well-tested
-Is it bug free? Not really
-Remaining bugs due to discrepancies between the state & the rendered views ~ show 1-2 instances of misrendering
-We should have tested the rendered views from every particular states as well
-Consider Integration Tests
-Lessons Learned
-State Machines must be designed thoroughly
-Yes, it's easier to test the states, but don't forget to test the rendered views!
-There's no silver bullet: Just as other solutions out there, "You might not need Redux, getDerivedStateFromProps, State Machines, etc."
-Key Takeaways
-Use State Machines sparingly
-Isolate State management into Custom Hooks
-Always test your code thoroughly
-Further Reading
-xstate
-Testing Trophy by Kent C. Dodds
+# Advantages
 
-</Notes>
+<ul>
+  <Appear>
+    <li>Now all states are visible!</li>
+    <li>Easier to test</li>
+    <li>All state transitions are well-tested</li>
+    <li>Is it bug free, as promised?</li>
+  </Appear>
+</ul>
+
+---
+
+# Caution!
+
+<ul>
+  <li>It's not completely bug free</li>
+  <Appear>
+    <li>
+      Remaining bugs due to discrepancies between the state & the rendered views
+    </li>
+    <li>For instance:</li>
+    <li>
+      We should have tested the rendered views from every particular states as
+      well
+    </li>
+    <li>Consider Integration Tests</li>
+  </Appear>
+</ul>
+
+---
+
+# Lessons Learned
+
+<ul>
+  <Appear>
+    <li>State Machines must be designed thoroughly</li>
+    <li>
+      Yes, it's easier to test the states, but don't forget to test the rendered
+      views!
+    </li>
+    <li>
+      There's no silver bullet: Just as other solutions out there, e.g.
+      <ul>
+        <li>You might not need Redux</li>
+        <li>You might not need getDerivedStateFromProps</li>
+        <li>You might not need State Machines</li>
+        <li>You might not need ... (fill in yourself)</li>
+      </ul>
+    </li>
+  </Appear>
+</ul>
+
+---
+
+# Key Takeaways
+
+<ul>
+  <Appear>
+    <li>Use State Machines sparingly</li>
+    <li>Isolate State management into Custom Hooks</li>
+    <li>Always test your code thoroughly</li>
+  </Appear>
+</ul>
+
+---
+
+# Further Reading
+
+- [xstate](https://xstate.js.org/docs/#why)
+- [Testing Trophy](https://kentcdodds.com/blog/write-tests) by Kent C. Dodds
+
+---
+
+# Thanks
