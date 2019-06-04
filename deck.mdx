@@ -1,5 +1,364 @@
+import { Appear, Image, Notes, Step } from 'mdx-deck'
+import { syntaxHighlighterPrism } from '@mdx-deck/themes'
+import customTheme from './theme'
+import { ReservationCalendar } from './app/ReservationCalendar'
+import 'antd/dist/antd.css'
+
+export const themes = [syntaxHighlighterPrism, customTheme]
+
 # State Machines Meet React Hooks
 
 ---
 
-Zain Fathoni
+# Zain Fathoni
+
+<ul>
+  <Appear>
+    <li>Indonesian family with 2 kids</li>
+    <li>Working & Living @ Singapore</li>
+    <li>Backend turned Frontend</li>
+    <li>♥️ React & its Hooks</li>
+  </Appear>
+</ul>
+
+---
+
+# What this talk is
+
+<ul>
+  <Appear>
+    <li>
+      A <em>very</em> brief introduction to State Machines
+    </li>
+    <li>My journey of refactoring React components to use it</li>
+    <li>An example of how to gain confidence of the code through unit tests</li>
+    <li>An example of combining State Machines with React Hooks usages</li>
+  </Appear>
+</ul>
+
+---
+
+# What this talk is _not_
+
+<ul>
+  <Appear>
+    <li>An introduction to React Hooks</li>
+    <li>A deep dig down of State Machines concepts</li>
+  </Appear>
+</ul>
+
+---
+
+# Problem Statement
+
+<ul>
+  <Appear>
+    <li>Complex UI flows require multiple states</li>
+    <li>Multiple states are generally too implicit</li>
+    <li>Implicit codes are harder to reason about</li>
+    <li>Hidden bugs everywhere due to "invisible states"</li>
+  </Appear>
+</ul>
+
+---
+
+# What is State Machines?
+
+<ul>
+  <Appear>
+    <li>
+      <a href="https://en.wikipedia.org/wiki/Finite-state_machine">
+        Finite State Machines
+      </a>
+    </li>
+    <li>
+      <a href="https://xstate.js.org/docs/#why" target="_blank">
+        Why?
+      </a>
+      <ul>
+        <li>Predictable</li>
+        <li>
+          <a
+            href="http://slides.com/davidkhourshid/finite-state-machines#/22"
+            target="_blank"
+          >
+            Provide a common language for designers & developers.
+          </a>
+        </li>
+      </ul>
+    </li>
+  </Appear>
+</ul>
+
+---
+
+<Image src="images/designers-flow-diagram.png" />
+
+---
+
+# Hypothesis
+
+<ul>
+  <Appear>
+    <li>State machines make all states are visible</li>
+    <li>No invisible states means no hidden bugs</li>
+  </Appear>
+</ul>
+
+---
+
+# Problem Domain:
+
+## Ninja Van Parcel Pickup Reservations
+
+<ul>
+  <Appear>
+    <li>Calendar View with all Reservations listed in corresponding dates</li>
+    <li>Modal View with multiple states</li>
+    <li>List View</li>
+    <li>
+      Detail View
+      <ul>
+        <li>View, Edit, & Create (for Upcoming Pickups)</li>
+        <li>View only (for Past Pickups)</li>
+      </ul>
+    </li>
+  </Appear>
+</ul>
+
+---
+
+# Let's jump to the code!
+
+<ol>
+  <Appear>
+    <li>Initial state: Conditional rendering using multiple local state</li>
+    <li>
+      Problem: Complex requirements breed complex conditionals in the code
+    </li>
+    <li>Solution: State machines alternative representation</li>
+  </Appear>
+</ol>
+
+---
+
+## Determining which View to display
+
+- List of Pickups (if pickups > 1)
+- Detail of Pickup (if pickups === 1)
+- Create New Pickup (if pickups === 0)
+
+---
+
+## Calendar
+
+<ReservationCalendar />
+
+---
+
+## ReservationCalendar
+
+```jsx
+export const ReservationCalendar = () => {
+  const {
+    data,
+    date,
+    disabledDate,
+    formattedDate,
+    onCancel,
+    onCreate,
+    onDelete,
+    onUpdate,
+    renderDate,
+    setMomentDate
+  } = useDateMap()
+
+  return (
+    <main className="container">
+      <Calendar
+        dateCellRender={renderDate}
+        disabledDate={disabledDate}
+        onSelect={setMomentDate}
+      />
+      <ReservationModal
+        data={data}
+        date={date}
+        formattedDate={formattedDate}
+        onCancel={onCancel}
+        onCreate={onCreate}
+        onDelete={onDelete}
+        onUpdate={onUpdate}
+      />
+    </main>
+  )
+}
+```
+
+---
+
+## ReservationModal
+
+```jsx
+export const ReservationModal = ({
+  data,
+  date,
+  formattedDate,
+  onCreate,
+  onDelete,
+  onUpdate,
+  ...props
+}) => {
+  const [index, setIndex] = useState(-1)
+  const [editing, setEditing] = useState(false)
+
+  // Render details directly if data.length === 1
+  useEffect(() => {
+    if (data.length === 1) {
+      setIndex(0)
+    }
+  }, [data.length, index, editing])
+
+  // FIXME: Avoid content flashing while closing the Modal
+  const visible = !!date
+  const isDetailView = visible && index >= 0
+  const isEmpty = visible && data.length === 0
+  const handleDelete = () => onDelete(date, index)
+  const handleCreate = data => onCreate(date, data)
+  const handleUpdate = data => onUpdate(date, index, data)
+  const handleEdit = () => setEditing(true)
+  const handleBack = () => {
+    setEditing(false)
+    setIndex(-1)
+  }
+
+  return (
+    <Modal
+      afterClose={() => {
+        setEditing(false)
+        setIndex(-1)
+      }}
+      centered
+      footer={
+        isDetailView && !editing && data[index].status === 'warning'
+          ? [
+              <DeleteButton key="delete" onClick={handleDelete} />,
+              <EditButton key="edit" onClick={handleEdit} />
+            ]
+          : null
+      }
+      title={
+        <>
+          {isDetailView && <LeftIcon onClick={handleBack} />}
+          {formattedDate}
+        </>
+      }
+      visible={visible}
+      {...props}
+    >
+      {isDetailView && !editing ? (
+        <ReservationDetailView item={data[index]} />
+      ) : isDetailView && editing ? (
+        <ReservationDetailEdit item={data[index]} onSubmit={handleUpdate} />
+      ) : isEmpty ? (
+        <ReservationDetailEdit onSubmit={handleCreate} />
+      ) : (
+        <ReservationList data={data} onActionClick={index => setIndex(index)} />
+      )}
+    </Modal>
+  )
+}
+```
+
+---
+
+# Demo
+
+---
+
+# Advantages
+
+<ul>
+  <Appear>
+    <li>Now all states are visible!</li>
+    <li>Easier to test</li>
+    <li>All state transitions are well-tested</li>
+    <li>Is it bug free, as promised?</li>
+  </Appear>
+</ul>
+
+---
+
+# Caution!
+
+<ul>
+  <li>It's not completely bug free</li>
+  <Appear>
+    <li>
+      Remaining bugs due to discrepancies between the state & the rendered views
+    </li>
+    <li>For instance:</li>
+    <li>
+      We should have tested the rendered views from every particular states as
+      well
+    </li>
+    <li>Consider Integration Tests</li>
+  </Appear>
+</ul>
+
+---
+
+# Lessons Learned
+
+<ul>
+  <Appear>
+    <li>State Machines must be designed thoroughly</li>
+    <li>
+      Yes, it's easier to test the states, but don't forget to test the rendered
+      views!
+    </li>
+    <li>
+      There's no silver bullet: Just as other solutions out there, e.g.
+      <ul>
+        <li>
+          <a href="https://medium.com/@dan_abramov/you-might-not-need-redux-be46360cf367">
+            You might not need Redux
+          </a>
+        </li>
+        <li>
+          <a href="https://reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html">
+            You Probably Don't Need Derived State
+          </a>
+        </li>
+        <li>
+          <strong>You might not need State Machines</strong>
+        </li>
+        <li>
+          <em>You might not need ... (fill in yourself)</em>
+        </li>
+      </ul>
+    </li>
+  </Appear>
+</ul>
+
+---
+
+# Key Takeaways
+
+<ul>
+  <Appear>
+    <li>Use State Machines sparingly</li>
+    <li>Isolate State management into Custom Hooks</li>
+    <li>Always test your code thoroughly</li>
+  </Appear>
+</ul>
+
+---
+
+# Further Reading
+
+- [xstate](https://xstate.js.org/docs/#why)
+- [Testing Trophy](https://kentcdodds.com/blog/write-tests) by Kent C. Dodds
+
+---
+
+# Thanks
